@@ -1,10 +1,11 @@
 const Apify = require('apify');
 const camelcaseKeysRecursive = require('camelcase-keys-recursive');
 const querystring = require('querystring');
+const moment = require('moment');
+const currencies = require('./currencyCodes.json');
 
 const { utils: { log } } = Apify;
 const { gerHomeListings, callForReviews } = require('./api');
-
 const {
     HEADERS,
     HISTOGRAM_ITEMS_COUNT,
@@ -12,6 +13,7 @@ const {
     MIN_PRICE,
     MIN_LIMIT,
     MAX_LIMIT,
+    DATE_FORMAT,
 } = require('./constants');
 
 async function enqueueListingsFromSection(results, requestQueue, minPrice, maxPrice) {
@@ -149,9 +151,55 @@ async function getReviews(listingId, getRequest) {
     return results;
 }
 
+function validateInput(input) {
+    const validate = (inputKey, type = 'string') => {
+        const value = input[inputKey];
+        if (value) {
+            if (typeof value !== type) {
+                throw new Error(`Value of ${inputKey} should be ${type}`);
+            }
+        }
+    };
+    const checkDate = (date) => {
+        if (date) {
+            const match = moment(date, DATE_FORMAT).format(DATE_FORMAT) === date;
+            if (!match) {
+                throw new Error(`Date should be in format ${DATE_FORMAT}`);
+            }
+        }
+    };
+    // check required field
+    if (!input.locationQuery && input.startUrls.length <= 0) {
+        throw new Error("At least one of the 'locationQuery' or 'startUrls' should be present.");
+    }
+
+    // check correct types
+    validate(input.locationQuery, 'string');
+    validate(input.minPrice, 'number');
+    validate(input.maxPrice, 'number');
+    validate(input.maxReviews, 'number');
+    validate(input.includeReviews, 'boolean');
+
+    // check date
+    checkDate(input.checkIn);
+    checkDate(input.checkOut);
+
+    if (input.currency) {
+        if (!currencies.find(curr => curr === input.currency)) {
+            throw new Error('Currency should be in ISO format');
+        }
+    }
+
+    if (input.startUrls) {
+        if (!Array.isArray(input.startUrls)) {
+            throw new Error('startUrls should be an array');
+        }
+    }
+}
 
 module.exports = {
     addListings,
     pivot,
     getReviews,
+    validateInput,
 };

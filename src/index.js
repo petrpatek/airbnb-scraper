@@ -3,7 +3,7 @@ const rp = require('request-promise');
 const camelcaseKeysRecursive = require('camelcase-keys-recursive');
 
 const { utils: { log } } = Apify;
-const { addListings, pivot, getReviews } = require('./tools');
+const { addListings, pivot, getReviews, validateInput } = require('./tools');
 
 let tunnelAgentExceptionListener;
 /**
@@ -43,6 +43,7 @@ const suppressTunnelAgentAssertError = () => {
 Apify.main(async () => {
     suppressTunnelAgentAssertError();
     const input = await Apify.getInput();
+    validateInput(input);
     const { currency, locationQuery } = input;
     const getRequest = async (url) => {
         const getProxyUrl = () => {
@@ -55,7 +56,10 @@ Apify.main(async () => {
             const proxyUrl = getProxyUrl();
             const options = {
                 uri: url,
-                headers: { 'x-airbnb-currency': currency, 'x-airbnb-api-key': process.env.API_KEY },
+                headers: {
+                    'x-airbnb-currency': currency,
+                    'x-airbnb-api-key': process.env.API_KEY,
+                },
                 proxy: proxyUrl,
                 json: true,
             };
