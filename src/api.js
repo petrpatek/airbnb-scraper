@@ -2,7 +2,7 @@ const querystring = require('querystring');
 const { MIN_PRICE, MAX_PRICE } = require('./constants');
 
 
-function gerHomeListings(location, getRequest, priceMin = MIN_PRICE, priceMax = MAX_PRICE, limit = 20, offset = 0) {
+function getHomeListings(location, getRequest, priceMin = MIN_PRICE, priceMax = MAX_PRICE, limit = 20, offset = 0, checkIn, checkOut) {
     const queryString = {
         location,
         price_min: priceMin,
@@ -11,6 +11,15 @@ function gerHomeListings(location, getRequest, priceMin = MIN_PRICE, priceMax = 
         _offset: offset,
 
     };
+
+    if (checkIn) {
+        queryString.checkin = checkIn;
+    }
+
+    if (checkOut) {
+        queryString.checkout = checkOut;
+    }
+
     return getRequest(
         `http://api.airbnb.com/v2/search_results?${querystring.stringify(queryString)}`,
     );
@@ -31,6 +40,6 @@ function callForReviews(listingId, getRequest, limit = 50, offset = 0) {
 }
 
 module.exports = {
-    gerHomeListings,
+    getHomeListings,
     callForReviews,
 };

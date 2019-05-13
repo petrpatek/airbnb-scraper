@@ -5,7 +5,7 @@ const moment = require('moment');
 const currencies = require('./currencyCodes.json');
 
 const { utils: { log } } = Apify;
-const { gerHomeListings, callForReviews } = require('./api');
+const { getHomeListings, callForReviews } = require('./api');
 const {
     HEADERS,
     HISTOGRAM_ITEMS_COUNT,
@@ -18,17 +18,21 @@ const {
 
 async function enqueueListingsFromSection(results, requestQueue, minPrice, maxPrice) {
     for (const { listing } of results) {
-        await requestQueue.addRequest({
-            url: `https://api.airbnb.com/v2/pdp_listing_details/${listing.id}?_format=for_native`,
-            headers: HEADERS,
-            userData: {
-                isHomeDetail: true,
-                minPrice,
-                maxPrice,
-                id: listing.id,
-            },
-        });
+        await enqueueDetailLink(listing.id, requestQueue, minPrice, maxPrice);
     }
+}
+
+function enqueueDetailLink(id, requestQueue, minPrice, maxPrice) {
+    return requestQueue.addRequest({
+        url: `https://api.airbnb.com/v2/pdp_listing_details/${id}?_format=for_native`,
+        headers: HEADERS,
+        userData: {
+            isHomeDetail: true,
+            minPrice,
+            maxPrice,
+            id,
+        },
+    });
 }
 
 function randomDelay(minimum = 200, maximum = 600) {
@@ -37,10 +41,10 @@ function randomDelay(minimum = 200, maximum = 600) {
     return Apify.utils.sleep(Math.floor(Math.random() * (max - min + 1)) + min);
 }
 
-async function getListingsSection(locationId, minPrice, maxPrice, requestQueue, getRequest) {
+async function getListingsSection(locationId, minPrice, maxPrice, requestQueue, getRequest, checkIn, checkOut) {
     const pageSize = MAX_LIMIT;
     let offset = 0;
-    let data = await gerHomeListings(locationId, getRequest, minPrice, maxPrice, pageSize, offset);
+    let data = await getHomeListings(locationId, getRequest, minPrice, maxPrice, pageSize, offset, checkIn, checkOut);
     const numberOfHomes = data.metadata.listings_count;
     const numberOfFetches = numberOfHomes / pageSize;
     await enqueueListingsFromSection(data.search_results, requestQueue, minPrice, maxPrice);
@@ -48,14 +52,14 @@ async function getListingsSection(locationId, minPrice, maxPrice, requestQueue, 
     for (let i = 0; i < numberOfFetches; i++) {
         offset += pageSize;
         await randomDelay();
-        data = await gerHomeListings(locationId, getRequest, minPrice, maxPrice, pageSize, offset);
+        data = await getHomeListings(locationId, getRequest, minPrice, maxPrice, pageSize, offset, checkIn, checkOut);
         await enqueueListingsFromSection(data.search_results, requestQueue, minPrice, maxPrice);
     }
 }
 
-async function addListings(query, requestQueue) {
-    const intervalSize = MAX_PRICE / HISTOGRAM_ITEMS_COUNT;
-    let pivotStart = MIN_PRICE;
+async function addListings(query, requestQueue, minPrice = MIN_PRICE, maxPrice = MAX_PRICE, checkIn, checkOut) {
+    const intervalSize = maxPrice / HISTOGRAM_ITEMS_COUNT;
+    let pivotStart = minPrice;
     let pivotEnd = intervalSize;
     for (let i = 0; i < HISTOGRAM_ITEMS_COUNT; i++) {
         const queryString = {
@@ -63,6 +67,15 @@ async function addListings(query, requestQueue) {
             price_min: pivotStart,
             price_max: pivotEnd,
         };
+
+        if (checkIn) {
+            queryString.checkin = checkIn;
+        }
+
+        if (checkOut) {
+            queryString.checkout = checkOut;
+        }
+
         const url = `https://api.airbnb.com/v2/search_results?${querystring.stringify(queryString)}`;
 
         log.info(`Adding initial pivoting url: ${url}`);
@@ -82,7 +95,7 @@ async function addListings(query, requestQueue) {
     }
 }
 
-async function pivot(request, requestQueue, getRequest) {
+async function pivot(request, requestQueue, getRequest, checkIn, checkOut) {
     const { pivotStart, pivotEnd, query } = request.userData;
     const data = await getRequest(request.url);
     const listingCount = data.metadata.listings_count;
@@ -99,6 +112,15 @@ async function pivot(request, requestQueue, getRequest) {
             price_max: intervalMiddle,
             _limit: MIN_LIMIT,
         };
+
+        if (checkIn) {
+            firstHalfQuery.checkin = checkIn;
+        }
+
+        if (checkOut) {
+            firstHalfQuery.checkout = checkOut;
+        }
+
         const firstHalfUrl = `http://api.airbnb.com/v2/search_results?${querystring.stringify(firstHalfQuery)}`;
 
         await requestQueue.addRequest({
@@ -117,6 +139,15 @@ async function pivot(request, requestQueue, getRequest) {
             price_max: pivotEnd,
             _limit: MIN_LIMIT,
         };
+
+        if (checkIn) {
+            secondHalfQuery.checkin = checkIn;
+        }
+
+        if (checkOut) {
+            secondHalfQuery.checkout = checkOut;
+        }
+
         const secondHalfUrl = `http://api.airbnb.com/v2/search_results?${querystring.stringify(secondHalfQuery)}`;
 
         await requestQueue.addRequest({
@@ -129,7 +160,7 @@ async function pivot(request, requestQueue, getRequest) {
             } });
     } else {
         log.info(`Getting listings for start: ${pivotStart} end: ${pivotEnd}`);
-        await getListingsSection(query, pivotStart, pivotEnd, requestQueue, getRequest);
+        await getListingsSection(query, pivotStart, pivotEnd, requestQueue, getRequest, checkIn, checkOut);
     }
 }
 
@@ -202,4 +233,5 @@ module.exports = {
     pivot,
     getReviews,
     validateInput,
+    enqueueDetailLink
 };

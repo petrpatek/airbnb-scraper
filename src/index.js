@@ -3,7 +3,7 @@ const rp = require('request-promise');
 const camelcaseKeysRecursive = require('camelcase-keys-recursive');
 
 const { utils: { log } } = Apify;
-const { addListings, pivot, getReviews, validateInput } = require('./tools');
+const { addListings, pivot, getReviews, validateInput, enqueueDetailLink } = require('./tools');
 
 let tunnelAgentExceptionListener;
 /**
@@ -44,7 +44,7 @@ Apify.main(async () => {
     suppressTunnelAgentAssertError();
     const input = await Apify.getInput();
     validateInput(input);
-    const { currency, locationQuery } = input;
+    const { currency, locationQuery, minPrice, maxPrice, checkIn, checkOut, startUrls } = input;
     const getRequest = async (url) => {
         const getProxyUrl = () => {
             const password = process.env.APIFY_PROXY_PASSWORD;
@@ -66,7 +66,7 @@ Apify.main(async () => {
             try {
                 response = await rp(options);
             } catch (e) {
-                log.exception(e, 'GetData error');
+                log.exception(e.message, 'GetData error');
                 if (e.statusCode === 429 && e.statusCode === 503) {
                     if (attempt >= 10) {
                         throw new Error(`Could not get data for: ${options.url}`);
@@ -81,7 +81,15 @@ Apify.main(async () => {
     };
 
     const requestQueue = await Apify.openRequestQueue();
-    await addListings(locationQuery, requestQueue);
+    if (startUrls && startUrls.length > 0) {
+        for (const { url } of startUrls) {
+            const id = url.slice(url.lastIndexOf('/') + 1, url.indexOf('?'));
+            console.log(id, 'ID');
+            await enqueueDetailLink(id, requestQueue);
+        }
+    } else {
+        await addListings(locationQuery, requestQueue, minPrice, maxPrice, checkIn, checkOut);
+    }
 
 
     const crawler = new Apify.BasicCrawler({
