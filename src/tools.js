@@ -66,6 +66,7 @@ async function addListings(query, requestQueue, minPrice = MIN_PRICE, maxPrice =
             location: query,
             price_min: pivotStart,
             price_max: pivotEnd,
+            _limit: MIN_LIMIT,
         };
 
         if (checkIn) {
