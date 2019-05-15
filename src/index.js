@@ -44,11 +44,16 @@ Apify.main(async () => {
     suppressTunnelAgentAssertError();
     const input = await Apify.getInput();
     validateInput(input);
-    const { currency, locationQuery, minPrice, maxPrice, checkIn, checkOut, startUrls } = input;
+    const { currency, locationQuery, minPrice, maxPrice, checkIn, checkOut, startUrls, proxyConfiguration } = input;
+    console.log(proxyConfiguration, 'PROXY');
     const getRequest = async (url) => {
         const getProxyUrl = () => {
-            const password = process.env.APIFY_PROXY_PASSWORD;
-            return `http://groups-SHADER+BUYPROXIES94952,session-airbnb_${Math.floor(Math.random() * 100000000)}:${password}@proxy.apify.com:8000`;
+            return Apify.getApifyProxyUrl({
+                password: process.env.APIFY_PROXY_PASSWORD,
+                groups: proxyConfiguration.apifyProxyGroups,
+                session: `airbnb_${Math.floor(Math.random() * 100000000)}`,
+
+            });
         };
 
         const getData = async (attempt = 0) => {

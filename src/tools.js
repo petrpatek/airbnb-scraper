@@ -234,5 +234,5 @@ module.exports = {
     pivot,
     getReviews,
     validateInput,
-    enqueueDetailLink
+    enqueueDetailLink,
 };
