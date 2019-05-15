@@ -1,7 +1,18 @@
 const querystring = require('querystring');
 const { MIN_PRICE, MAX_PRICE } = require('./constants');
 
-
+/**
+ *
+ * @param {String} location
+ * @param {function} getRequest
+ * @param {number} priceMin
+ * @param {number} priceMax
+ * @param {number} limit
+ * @param {number} offset
+ * @param {string} checkIn
+ * @param {string} checkOut
+ * @return {Promise}
+ */
 function getHomeListings(location, getRequest, priceMin = MIN_PRICE, priceMax = MAX_PRICE, limit = 20, offset = 0, checkIn, checkOut) {
     const queryString = {
         location,
@@ -25,6 +36,14 @@ function getHomeListings(location, getRequest, priceMin = MIN_PRICE, priceMax = 
     );
 }
 
+/**
+ *
+ * @param {string} listingId
+ * @param {function} getRequest
+ * @param {number} limit
+ * @param {number} offset
+ * @return {Promise}
+ */
 function callForReviews(listingId, getRequest, limit = 50, offset = 0) {
     const queryString = {
         _order: 'language_country',
