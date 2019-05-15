@@ -1,4 +1,4 @@
-const MAX_PRICE = 50000; // Default is in currency
+const MAX_PRICE = 50000;
 const MIN_PRICE = 0;
 const HISTOGRAM_ITEMS_COUNT = 100;
 const MIN_LIMIT = 10;

@@ -42,10 +42,12 @@ const suppressTunnelAgentAssertError = () => {
 
 Apify.main(async () => {
     suppressTunnelAgentAssertError();
+
     const input = await Apify.getInput();
+
     validateInput(input);
+
     const { currency, locationQuery, minPrice, maxPrice, checkIn, checkOut, startUrls, proxyConfiguration } = input;
-    console.log(proxyConfiguration, 'PROXY');
     const getRequest = async (url) => {
         const getProxyUrl = () => {
             return Apify.getApifyProxyUrl({
@@ -55,7 +57,6 @@ Apify.main(async () => {
 
             });
         };
-
         const getData = async (attempt = 0) => {
             let response;
             const proxyUrl = getProxyUrl();
@@ -86,10 +87,11 @@ Apify.main(async () => {
     };
 
     const requestQueue = await Apify.openRequestQueue();
+
+    // Add startUrls to the requestQueue
     if (startUrls && startUrls.length > 0) {
         for (const { url } of startUrls) {
             const id = url.slice(url.lastIndexOf('/') + 1, url.indexOf('?'));
-            console.log(id, 'ID');
             await enqueueDetailLink(id, requestQueue);
         }
     } else {
@@ -105,10 +107,12 @@ Apify.main(async () => {
         handleRequestFunction: async ({ request }) => {
             const { isHomeDetail, isPivoting } = request.userData;
             if (isPivoting) {
-                log.info('Pivoting');
+                log.info('Finding the interval with less than 1000 items');
+
                 await pivot(request, requestQueue, getRequest);
             } else if (isHomeDetail) {
                 log.info('Saving home detail');
+
                 try {
                     const { pdp_listing_detail: detail } = await getRequest(request.url);
                     try {
@@ -126,14 +130,13 @@ Apify.main(async () => {
 
         // This function is called if the page processing failed more than maxRequestRetries+1 times.
         handleFailedRequestFunction: async ({ request }) => {
-            console.log(`Request ${request.url} failed too many times`);
+            log.warning(`Request ${request.url} failed too many times`);
             await Apify.pushData({
                 '#debug': Apify.utils.createRequestDebugInfo(request),
             });
         },
     });
 
-    // Run the crawler and wait for it to finish.
     await crawler.run();
     process.removeListener('uncaughtException', tunnelAgentExceptionListener);
     tunnelAgentExceptionListener = null;

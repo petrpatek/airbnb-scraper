@@ -187,7 +187,7 @@ function validateInput(input) {
     const validate = (inputKey, type = 'string') => {
         const value = input[inputKey];
         if (value) {
-            if (typeof value !== type) {
+            if (typeof value !== type) { //eslint-disable-line
                 throw new Error(`Value of ${inputKey} should be ${type}`);
             }
         }
