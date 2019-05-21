@@ -23,6 +23,7 @@ async function enqueueListingsFromSection(results, requestQueue, minPrice, maxPr
 }
 
 function enqueueDetailLink(id, requestQueue, minPrice, maxPrice) {
+    log.debug(`Enquing home with id: ${id}`);
     return requestQueue.addRequest({
         url: `https://api.airbnb.com/v2/pdp_listing_details/${id}?_format=for_native`,
         headers: HEADERS,
@@ -35,7 +36,7 @@ function enqueueDetailLink(id, requestQueue, minPrice, maxPrice) {
     });
 }
 
-function randomDelay(minimum = 200, maximum = 600) {
+function randomDelay(minimum = 100, maximum = 200) {
     const min = Math.ceil(minimum);
     const max = Math.floor(maximum);
     return Apify.utils.sleep(Math.floor(Math.random() * (max - min + 1)) + min);
@@ -101,6 +102,8 @@ async function pivot(request, requestQueue, getRequest, checkIn, checkOut) {
     const data = await getRequest(request.url);
     const listingCount = data.metadata.listings_count;
 
+    log.debug(`Listings found: ${listingCount}`);
+
     if (listingCount === 0) {
         return;
     }
@@ -123,6 +126,7 @@ async function pivot(request, requestQueue, getRequest, checkIn, checkOut) {
         }
 
         const firstHalfUrl = `http://api.airbnb.com/v2/search_results?${querystring.stringify(firstHalfQuery)}`;
+        log.debug(`First half url: ${firstHalfUrl}`);
 
         await requestQueue.addRequest({
             url: firstHalfUrl,
@@ -150,6 +154,7 @@ async function pivot(request, requestQueue, getRequest, checkIn, checkOut) {
         }
 
         const secondHalfUrl = `http://api.airbnb.com/v2/search_results?${querystring.stringify(secondHalfQuery)}`;
+        log.debug(`Second half url: ${secondHalfUrl}`);
 
         await requestQueue.addRequest({
             url: secondHalfUrl,

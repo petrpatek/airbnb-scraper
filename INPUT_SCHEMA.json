@@ -7,14 +7,14 @@
     "locationQuery": {
       "title": "Location",
       "type": "string",
-      "description": "Location name as you would enter to Airbnb search. Actor takes the first result as desired location",
+      "description": "Location name as you would enter to Airbnb search. Actor takes the first result as desired location.",
       "default": "Los Angeles",
       "editor": "textfield"
     },
     "currency": {
       "title": "Currency",
       "type": "string",
-      "description": "Currency for display prices",
+      "description": "Currency for displayed prices.",
       "enum": [
         "AFN",
         "EUR",
@@ -327,37 +327,37 @@
     "maxReviews": {
       "title": "Maximum reviews",
       "type": "integer",
-      "description": "Amount of reviews to be scraped for each listing",
+      "description": "Amount of reviews to be scraped for each listing.",
       "default": 1000
     },
     "priceMin": {
       "title": "Minimum price",
       "type": "integer",
-      "description": "Sets filter min_price to the search query",
+      "description": "Sets filter min_price to the search query.",
       "default": 0
     },
     "priceMax": {
       "title": "Maximum price",
       "type": "integer",
-      "description": "Sets filter max_price to the search query",
+      "description": "Sets filter max_price to the search query.",
       "default": 100000
     },
     "checkIn": {
       "title": "Checkin date",
       "type": "string",
-      "description": "Prices will be calculated for this date",
+      "description": "First day of stay.",
       "editor": "textfield"
     },
     "checkOut": {
       "title": "Check ut date",
       "type": "string",
-      "description": "Prices will be calculated for this date",
+      "description": "Last day of stay.",
       "editor": "textfield"
     },
     "proxyConfiguration": {
       "title": "Proxy configuration",
       "type": "object",
-      "description": "Optionaly use Apify Proxy",
+      "description": "Optionally use Apify Proxy",
       "prefill": {
         "useApifyProxy": true
       },

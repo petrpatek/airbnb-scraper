@@ -5,16 +5,16 @@ You can get all of the basic pieces of information about the listing and all of 
 
 The actor was meant to be used for extracting all listings for a particular location.
 You can specify the price range, checkin and checkout dates. 
-Normally the Airbnb provides only the first 300 results, but with our Airbnb Scraper you can access all of them.
+Normally the Airbnb provides only the first 300 results on their website and limits the API to 1000 results, but with our Airbnb Scraper you can access all of them.
 The actor can be used for various use cases. 
 You can monitor amount of Airbnb listings around your listing and get the newest prices updates and follow the trends for the given location.
 Another possible use case is to analyze reviews using sentiment analysis and detect the best location in the town.
 
 ## Get all listing for given location
 It is super easy to get all Airbnb listings for a given location. If you are looking for a more specific set of results.
-You can also add `priceMin`, `priceMax`, `checkIn`, `checkOut`,`currency`.
+You can also add `priceMin`, `priceMax`, `checkIn`, `checkOut`,`currency`. Description of these fields can be found in Input schema.
 You have to only fill in the location field in the UI or pass the `INPUT` in the following shape:
-```javascript
+``` javascript
    {
     "locationQuery": "London"
    }
