@@ -12,7 +12,17 @@ Apify.main(async () => {
 
     validateInput(input);
 
-    const { currency, locationQuery, minPrice, maxPrice, checkIn, checkOut, startUrls, proxyConfiguration, includeReviews } = input;
+    const {
+        currency,
+        locationQuery,
+        minPrice,
+        maxPrice,
+        checkIn,
+        checkOut,
+        startUrls,
+        proxyConfiguration,
+        includeReviews,
+    } = input;
 
     const getRequest = async (url) => {
         const getProxyUrl = () => {
@@ -89,6 +99,7 @@ Apify.main(async () => {
 
                 try {
                     const { pdp_listing_detail: detail } = await getRequest(request.url);
+
                     try {
                         detail.reviews = includeReviews ? await getReviews(request.userData.id, getRequest) : [];
                     } catch (e) {
@@ -103,7 +114,6 @@ Apify.main(async () => {
             }
         },
 
-        // This function is called if the page processing failed more than maxRequestRetries+1 times.
         handleFailedRequestFunction: async ({ request }) => {
             log.warning(`Request ${request.url} failed too many times`);
             await Apify.pushData({
