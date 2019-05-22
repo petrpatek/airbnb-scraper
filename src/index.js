@@ -101,12 +101,14 @@ Apify.main(async () => {
 
                 try {
                     const { pdp_listing_detail: detail } = await getRequest(request.url);
+                    detail.reviews = [];
 
-                    try {
-                        detail.reviews = includeReviews ? await getReviews(request.userData.id, getRequest) : [];
-                    } catch (e) {
-                        log.exception(e, 'Could not get reviews');
-                        detail.reviews = [];
+                    if (includeReviews) {
+                        try {
+                            detail.reviews = await getReviews(request.userData.id, getRequest);
+                        } catch (e) {
+                            log.exception(e, 'Could not get reviews');
+                        }
                     }
 
                     await Apify.pushData(camelcaseKeysRecursive(detail));
