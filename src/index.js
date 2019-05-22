@@ -56,10 +56,12 @@ Apify.main(async () => {
                 response = await got(options);
             } catch (e) {
                 log.exception(e.message, 'GetData error');
+
+                if (attempt >= 10) {
+                    throw new Error(`Could not get data for: ${options.url}`);
+                }
+
                 if (e.statusCode === 429 && e.statusCode === 503) {
-                    if (attempt >= 10) {
-                        throw new Error(`Could not get data for: ${options.url}`);
-                    }
                     response = await getData(attempt + 1);
                 }
             }
