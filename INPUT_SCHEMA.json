@@ -8,7 +8,7 @@
       "title": "Location",
       "type": "string",
       "description": "Location name as you would enter to Airbnb search. Actor takes the first result as desired location.",
-      "default": "Los Angeles",
+      "default": "Sacramento",
       "editor": "textfield"
     },
     "currency": {
