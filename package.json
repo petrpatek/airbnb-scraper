@@ -4,7 +4,7 @@
 	"description": "Crawl a number of web pages using headless Chrome and Puppeteer",
 	"main": "main.js",
 	"dependencies": {
-		"apify": "^0.13.3",
+		"apify": "^0.14.15",
 		"camelcase-keys-recursive": "^0.8.2",
 		"got": "^9.6.0",
 		"moment": "^2.24.0",

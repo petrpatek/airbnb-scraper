@@ -97,10 +97,10 @@ Apify.main(async () => {
 
                 await pivot(request, requestQueue, getRequest);
             } else if (isHomeDetail) {
-                log.info('Saving home detail');
-
                 try {
                     const { pdp_listing_detail: detail } = await getRequest(request.url);
+                    log.info(`Saving home detail - ${detail.id}`);
+
                     detail.reviews = [];
 
                     if (includeReviews) {

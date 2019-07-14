@@ -9,8 +9,8 @@ const { getHomeListings, callForReviews } = require('./api');
 const {
     HEADERS,
     HISTOGRAM_ITEMS_COUNT,
-    MAX_PRICE,
-    MIN_PRICE,
+    DEFAULT_MAX_PRICE,
+    DEFAULT_MIN_PRICE,
     MIN_LIMIT,
     MAX_LIMIT,
     DATE_FORMAT,
@@ -58,7 +58,7 @@ async function getListingsSection(locationId, minPrice, maxPrice, requestQueue, 
     }
 }
 
-async function addListings(query, requestQueue, minPrice = MIN_PRICE, maxPrice = MAX_PRICE, checkIn, checkOut) {
+async function addListings(query, requestQueue, minPrice = DEFAULT_MIN_PRICE, maxPrice = DEFAULT_MAX_PRICE, checkIn, checkOut) {
     const intervalSize = maxPrice / HISTOGRAM_ITEMS_COUNT;
     let pivotStart = minPrice;
     let pivotEnd = intervalSize;
@@ -231,6 +231,11 @@ function validateInput(input) {
         if (!Array.isArray(input.startUrls)) {
             throw new Error('startUrls should be an array');
         }
+        input.startUrls.forEach((url) => {
+            if (!url.includes('airbnb')) {
+                throw new Error('Start url should be an airbnb');
+            }
+        });
     }
 }
 
