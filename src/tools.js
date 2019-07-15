@@ -232,7 +232,7 @@ function validateInput(input) {
             throw new Error('startUrls should be an array');
         }
         input.startUrls.forEach((url) => {
-            if (!url.includes('airbnb')) {
+            if (!url.url.includes('airbnb')) {
                 throw new Error('Start url should be an airbnb');
             }
         });
